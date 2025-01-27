@@ -24,6 +24,7 @@ class Aligning_Dataset(TrajectoryDataset):
             action_dim: int = 2,
             max_len_data: int = 256,
             window_size: int = 1,
+            rnn: bool = False,
     ):
 
         super().__init__(
@@ -32,7 +33,8 @@ class Aligning_Dataset(TrajectoryDataset):
             obs_dim=obs_dim,
             action_dim=action_dim,
             max_len_data=max_len_data,
-            window_size=window_size
+            window_size=window_size,
+            rnn=rnn
         )
 
         logging.info("Loading Robot Push Dataset")
@@ -134,17 +136,22 @@ class Aligning_Dataset(TrajectoryDataset):
         return torch.cat(result, dim=0)
 
     def __len__(self):
-        return len(self.slices)
+        if self.rnn:
+            return len(self.observations)
+        else:
+            return len(self.slices)
 
     def __getitem__(self, idx):
+        if self.rnn:
+            return self.observations[idx], self.actions[idx], self.masks[idx]
+        else:
+            i, start, end = self.slices[idx]
 
-        i, start, end = self.slices[idx]
+            obs = self.observations[i, start:end]
+            act = self.actions[i, start:end]
+            mask = self.masks[i, start:end]
 
-        obs = self.observations[i, start:end]
-        act = self.actions[i, start:end]
-        mask = self.masks[i, start:end]
-
-        return obs, act, mask
+            return obs, act, mask
 
 
 class Aligning_Img_Dataset(TrajectoryDataset):

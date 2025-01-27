@@ -21,6 +21,7 @@ class TrajectoryDataset(Dataset, abc.ABC):
             action_dim: int = 2,
             max_len_data: int = 256,
             window_size: int = 1,
+            rnn: bool = False
     ):
 
         self.data_directory = data_directory
@@ -31,6 +32,9 @@ class TrajectoryDataset(Dataset, abc.ABC):
         self.obs_dim = obs_dim
 
         self.window_size = window_size
+        
+        # if True, __getitem__ method returns data shaped as ((T, n), ...)
+        self.rnn = rnn
 
     @abc.abstractmethod
     def get_seq_length(self, idx):

@@ -1,0 +1,48 @@
+_target_: agents.act_agent.ActAgent # agents.joint_ibc_agent.PlanarRobotJointIBCAgent  # agents.joint_distribution_ebm_agent.PlanarBotJointEBMAgent
+_recursive_: false
+
+optimization:
+  _target_: torch.optim.AdamW
+  lr: 1e-4
+  betas: [0.9, 0.95]
+  weight_decay: 1e-6
+
+lr_scheduler:
+  _target_: torch.optim.lr_scheduler.CosineAnnealingLR
+  #step_size: 100
+  # gamma: 0.99
+  T_max: 100000
+  eta_min: 1e-6
+
+model:
+  _target_: agents.models.sarnn.SARNN
+  _recursive_: false
+
+  rec_dim: 50
+  k_dim: 5
+  obs_dim: ${obs_dim}
+  action_dim: ${action_dim}
+  temperature: 1e-4
+  heatmap_size: 0.1
+  kernel_size: 3
+  visual_input: false
+  im_size: [96, 96]
+
+trainset: ${trainset}
+valset: ${valset}
+train_batch_size: ${train_batch_size}
+val_batch_size: ${val_batch_size}
+num_workers: ${num_workers}
+epoch: ${epoch}
+device: ${device}
+scale_data: ${scale_data}
+eval_every_n_epochs: ${eval_every_n_epochs}
+
+action_seq_size: ${window_size}
+obs_size: 1
+
+goal_conditioned: false
+decay: 0
+goal_window_size: 1
+window_size: ${window_size}
+patience: 80 # interval for early stopping during epoch training
