@@ -1,4 +1,4 @@
-_target_: agents.act_agent.ActAgent # agents.joint_ibc_agent.PlanarRobotJointIBCAgent  # agents.joint_distribution_ebm_agent.PlanarBotJointEBMAgent
+_target_: agents.sarnn_agent.SarnnAgent # agents.joint_ibc_agent.PlanarRobotJointIBCAgent  # agents.joint_distribution_ebm_agent.PlanarBotJointEBMAgent
 _recursive_: false
 
 optimization:
@@ -15,7 +15,7 @@ lr_scheduler:
   eta_min: 1e-6
 
 model:
-  _target_: agents.models.sarnn.SARNN
+  _target_: agents.models.sarnn.SARNN.SARNN
   _recursive_: false
 
   rec_dim: 50
@@ -25,7 +25,7 @@ model:
   temperature: 1e-4
   heatmap_size: 0.1
   kernel_size: 3
-  visual_input: false
+  visual_input: true
   im_size: [96, 96]
 
 trainset: ${trainset}
@@ -45,4 +45,4 @@ goal_conditioned: false
 decay: 0
 goal_window_size: 1
 window_size: ${window_size}
-patience: 80 # interval for early stopping during epoch training
+patience: 1000 # interval for early stopping during epoch training

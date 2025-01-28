@@ -11,8 +11,8 @@ num_boxes: 4
 
 # insert wandb here
 wandb:
-  entity: ???
-  project: ???
+  entity: test
+  project: test
 
 group: sorting_${agent_name}
 
@@ -73,7 +73,7 @@ train_simulation:
   _target_: simulation.sorting_sim.Sorting_Sim
   seed: ${seed}
   device: ${device}
-  render: False
+  render: True
   n_cores: 1
   n_contexts: 1
   n_trajectories_per_context: 1
@@ -86,7 +86,7 @@ simulation:
   _target_: simulation.sorting_sim.Sorting_Sim
   seed: ${seed}
   device: ${device}
-  render: False
+  render: True
   n_cores: 5
   n_contexts: 60
   n_trajectories_per_context: 18

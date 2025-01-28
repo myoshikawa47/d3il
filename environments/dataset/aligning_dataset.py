@@ -7,6 +7,7 @@ import glob
 
 import cv2
 import torch
+import torch.nn.functional as F
 import pickle
 import numpy as np
 from tqdm import tqdm
@@ -163,6 +164,7 @@ class Aligning_Img_Dataset(TrajectoryDataset):
             action_dim: int = 2,
             max_len_data: int = 256,
             window_size: int = 1,
+            rnn: bool = False
     ):
 
         super().__init__(
@@ -171,7 +173,8 @@ class Aligning_Img_Dataset(TrajectoryDataset):
             obs_dim=obs_dim,
             action_dim=action_dim,
             max_len_data=max_len_data,
-            window_size=window_size
+            window_size=window_size,
+            rnn=rnn
         )
 
         logging.info("Loading Robot Push Dataset")
@@ -271,6 +274,9 @@ class Aligning_Img_Dataset(TrajectoryDataset):
         self.num_data = len(self.observations)
 
         self.slices = self.get_slices()
+        
+        if self.rnn:
+            self.pad_data()
 
     def get_slices(self):
         slices = []
@@ -288,7 +294,20 @@ class Aligning_Img_Dataset(TrajectoryDataset):
                 ]  # slice indices follow convention [start, end)
 
         return slices
-
+    
+    def pad_data(self):
+        bp_cam_imgs = []
+        inhand_cam_imgs = []
+        for i in range(len(self.bp_cam_imgs)):
+            valid_len = sum(self.masks[i])
+            pad_len = self.max_len_data - valid_len
+            bp_cam_imgs.append(F.pad(self.bp_cam_imgs[i], (0,0,0,0,0,0,0,int(pad_len)), 'replicate'))
+            inhand_cam_imgs.append(F.pad(self.inhand_cam_imgs[i], (0,0,0,0,0,0,0,int(pad_len)), 'replicate'))
+            self.observations[i, valid_len:] += self.observations[i, valid_len - 1]
+            self.actions[i, valid_len:] += self.actions[i, valid_len - 1]
+        self.bp_cam_imgs = torch.stack(bp_cam_imgs)
+        self.inhand_cam_imgs = torch.stack(inhand_cam_imgs)
+        
     def get_seq_length(self, idx):
         return int(self.masks[idx].sum().item())
 
@@ -309,17 +328,22 @@ class Aligning_Img_Dataset(TrajectoryDataset):
         return torch.cat(result, dim=0)
 
     def __len__(self):
-        return len(self.slices)
+        if self.rnn:
+            return len(self.observations)
+        else:
+            return len(self.slices)
 
     def __getitem__(self, idx):
+        if self.rnn:
+            return self.bp_cam_imgs[idx], self.inhand_cam_imgs[idx], self.observations[idx], self.actions[idx], self.masks[idx]
+        else:
+            i, start, end = self.slices[idx]
 
-        i, start, end = self.slices[idx]
+            obs = self.observations[i, start:end]
+            act = self.actions[i, start:end]
+            mask = self.masks[i, start:end]
 
-        obs = self.observations[i, start:end]
-        act = self.actions[i, start:end]
-        mask = self.masks[i, start:end]
+            bp_imgs = self.bp_cam_imgs[i][start:end]
+            inhand_imgs = self.inhand_cam_imgs[i][start:end]
 
-        bp_imgs = self.bp_cam_imgs[i][start:end]
-        inhand_imgs = self.inhand_cam_imgs[i][start:end]
-
-        return bp_imgs, inhand_imgs, obs, act, mask
+            return bp_imgs, inhand_imgs, obs, act, mask

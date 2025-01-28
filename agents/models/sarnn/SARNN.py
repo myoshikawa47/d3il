@@ -139,7 +139,7 @@ class SARNN(nn.Module):
             nn.init.xavier_uniform_(m.weight)
             nn.init.zeros_(m.bias)
 
-    def forward(self, xi, xv, rnn_state=None):
+    def forward(self, state, rnn_state=None):
         """
         Forward pass of the SARNN module.
         Predicts the image, joint angle, and attention at the next time based on the image and joint angle at time t.
@@ -201,11 +201,14 @@ class SARNN(nn.Module):
 
             y_image_hand = self.decoder_image(hid)  # Decode image
             
-            return y_image_agent, y_image_hand, \
+            return [y_image_agent, y_image_hand, \
                     y_action, \
                     enc_pts_agent, enc_pts_hand, \
-                    dec_pts_agent, dec_pts_hand, \
+                    dec_pts_agent, dec_pts_hand], \
                     rnn_hid
 
         else:
             return y_action, rnn_hid
+        
+    def get_params(self):
+        return self.parameters()

@@ -70,7 +70,8 @@ simulation:
   _target_: simulation.aligning_sim.Aligning_Sim
   seed: ${seed}
   device: ${device}
-  render: False
-  n_cores: 30
-  n_contexts: 60
+  render: True
+  n_cores: 3
+  n_contexts: 6
   n_trajectories_per_context: 8
+  

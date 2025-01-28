@@ -1,5 +1,5 @@
 defaults:
-  - agents: ddpm_encdec_vision
+  - agents: ddpm_encdec_vision_agent
 #  - override hydra/launcher: submitit_slurm
 
 agent_name: ddpm_encdec_vision
@@ -10,8 +10,8 @@ eval_data_path: environments/dataset/data/aligning/eval_files.pkl
 
 # insert wandb here
 wandb:
-  entity: ???
-  project: ???
+  entity: test
+  project: test
 
 group: aligning_${agent_name}
 
@@ -76,7 +76,7 @@ train_simulation:
   _target_: simulation.aligning_sim.Aligning_Sim
   seed: ${seed}
   device: ${device}
-  render: False
+  render: True
   n_cores: 1
   n_contexts: 1
   n_trajectories_per_context: 1
@@ -87,7 +87,7 @@ simulation:
   _target_: simulation.aligning_sim.Aligning_Sim
   seed: ${seed}
   device: ${device}
-  render: False
+  render: True
   n_cores: 5
   n_contexts: 60
   n_trajectories_per_context: 8

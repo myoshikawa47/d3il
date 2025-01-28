@@ -27,7 +27,8 @@ class BaseAgent(abc.ABC):
         device: str = 'cpu',
         epoch: int = 100,
         scale_data: bool = True,
-        eval_every_n_epochs: int = 50
+        eval_every_n_epochs: int = 50,
+        rnn: bool = True
     ):
 
         self.model = hydra.utils.instantiate(model).to(device)
@@ -61,6 +62,8 @@ class BaseAgent(abc.ABC):
         self.working_dir = os.getcwd()
 
         self.scaler = Scaler(self.trainset.get_all_observations(), self.trainset.get_all_actions(), scale_data, device)
+        
+        self.rnn = rnn
 
         total_params = sum(p.numel() for p in self.model.get_params())
 
